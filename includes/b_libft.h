@@ -1,21 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strcmp.c                                        :+:      :+:    :+:   */
+/*   b_libft.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pmigeon <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/09/11 18:46:36 by pmigeon           #+#    #+#             */
-/*   Updated: 2018/09/18 17:23:01 by pmigeon          ###   ########.fr       */
+/*   Created: 2018/10/01 14:47:44 by pmigeon           #+#    #+#             */
+/*   Updated: 2018/10/11 20:48:14 by pmigeon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-int		ft_strcmp(const char *s1, const char *s2)
+#ifndef B_LIBFT_H
+# define B_LIBFT_H
+# include <sys/stat.h>
+#include <stdlib.h>
+#define BOOLEAN int
+
+int		ft_strcmp(const char *s1, const char *s2);
+
+typedef struct s_node {
+	struct stat *data;
+	char *name;
+	struct s_node* next;
+}				t_node;
+
+typedef struct s_flags
 {
-	while (*s1 && *s2 && *s1 == *s2)
-	{
-		s1++;
-		s2++;
-	}
-	return ((unsigned char)*s1 - (unsigned char)*s2);
-}
+	BOOLEAN lFLAG;
+	BOOLEAN aFLAG;
+	BOOLEAN rFLAG;
+	BOOLEAN RFLAG;
+	BOOLEAN tFLAG;
+}				t_flags;
+
+# endif
