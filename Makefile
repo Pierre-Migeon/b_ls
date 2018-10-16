@@ -6,35 +6,34 @@
 #    By: pmigeon <marvin@42.fr>                     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/10 16:09:15 by pmigeon           #+#    #+#              #
-#    Updated: 2018/10/11 18:24:27 by pmigeon          ###   ########.fr        #
+#    Updated: 2018/10/11 18:28:18 by pmigeon          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-SOURCES = src/ft_strcmp.c
-HEADER = includes/
+SOURCES = src/ft_strcmp.c src/ls.c
+HEADER = ./includes/
 LIBNAME = libftprintf.a
 COMPILER = gcc
 FLAGS = -Wall -Werror -Wextra
-OFILE = ./b_printf.o ./format.o
+OFILE = ft_strcmp.o ls.o
 NAME = libftprintf.a
 
 all: $(NAME)
 
-$(NAME): 
-	$(COMPILER) $(FLAGS) -c $(SOURCES) -I $(HEADER)
+$(NAME):
+	$(COMPILER) $(FLAGS) -c $(SOURCES)
+	$(COMPILER) $(FLAGS) $(OFILE) -o ./ls
+
+makelib: re
 	ar rc $(LIBNAME) $(OFILE)
 	ranlib $(LIBNAME)
 
-compile: re 
-	$(COMPILER) $(FLAGS) -c ./main.c 
-	$(COMPILER) $(FLAGS) $(OFILE) ./main.o -o prog
+re: fclean all
 
 clean:
 	/bin/rm -f $(OFILE)
-	/bin/rm -f ./main.o
 
 fclean: clean 
 	/bin/rm -f $(LIBNAME)
-	/bin/rm -f ./prog
 
-re: fclean all
+

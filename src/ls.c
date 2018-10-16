@@ -6,7 +6,7 @@
 /*   By: pmigeon <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/26 15:40:00 by pmigeon           #+#    #+#             */
-/*   Updated: 2018/10/11 21:04:21 by pmigeon          ###   ########.fr       */
+/*   Updated: 2018/10/15 20:05:04 by pmigeon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#include "./includes/b_libft.h"
+#include "../includes/b_libft.h"
 
 void		ft_push(t_node **head, struct stat *input, char *name)
 {
@@ -42,28 +42,54 @@ void	ft_swap(t_node *a, t_node *b)
 	b->name = tempc;
 }
 
+int		timesort(t_node *a, t_node *b)
+{
+	if (a->data->st_mtimespec.tv_sec < b->data->st_mtimespec.tv_sec)
+		return (1);
+	else if (a->data->st_mtimespec.tv_sec == b->data->st_mtimespec.tv_sec)
+	{
+		if (a->data->st_mtimespec.tv_nsec < b->data->st_mtimespec.tv_nsec)
+			return (1);
+		else if (a->data->st_mtimespec.tv_nsec == b->data->st_mtimespec.tv_nsec)
+			return (ft_strcmp(a->name, b->name));
+	}
+	return (0);
+}
+
+int		ft_determinesort(t_node *current, t_node *next, t_flags flags)
+{
+	if (flags.tFLAG)
+	{
+		if (flags.rFLAG)
+			return (timesort(next, current));
+		return (timesort(current, next));
+	}
+	else if (flags.rFLAG)
+		return (ft_strcmp(next->name, current->name));
+	else
+		return (ft_strcmp(current->name, next->name));
+	return (0);
+}
+
 void	ft_bubblesort(t_node *head, t_flags flags)
 {
 	int swap;
 	t_node *current;
-	t_node *last; 
-flags.lFLAG = 0;	
+
 	swap = 1;
-	last = NULL;
 	while (swap == 1)
 	{
 		current = head;
 		swap = 0;
-		while (current->next != last)
+		while (current->next)
 		{
-			if (ft_strcmp(current->name, current->next->name) > 1)
+			if (ft_determinesort(current, current->next, flags) > 0)
 			{
 				ft_swap(current, current->next);
 				swap = 1;
 			}
 			current = current->next;
 		}
-		last = current;
 	}
 }
 
@@ -72,15 +98,15 @@ int		ft_flaghandler(char **argv, t_flags *flags)
 	int i;
 	int k;
 
-	i = 1;
-	k = 1;
-	while (argv[i++])			
+	i = 0;
+	k = -1;
+	while (argv[++i])
 	{
 		if (argv[i][0] != '-')
 			return(i);
 		if (argv[i][0] == '-' && argv[i][1] == '-')
 			return (i + 1);
-		while (argv[i][0] == '-' && argv[i][k++])
+		while (argv[i][0] == '-' && argv[i][++k])
 		{
 			if (argv[i][k] == 'l')
 				flags->lFLAG = 1;
@@ -93,6 +119,28 @@ int		ft_flaghandler(char **argv, t_flags *flags)
 		}
 	}
 	return(i);
+}
+
+void	ft_printls(t_node *head, t_flags flags)
+{
+	while (head != NULL)
+	{
+		if (flags.aFLAG)
+		{
+			if (flags.lFLAG)
+				printf("%s\n", head->name);
+			else 
+				printf("%s\t", head->name);
+		}
+		else if (head->name[0] != '.')
+		{
+			if (flags.lFLAG)
+				printf("%s\n", head->name);
+			else
+				printf("%s\t", head->name);
+		}
+		head = head->next;
+	}
 }
 
 int		b_ls(char *dirname, t_flags flags)
@@ -113,13 +161,7 @@ int		b_ls(char *dirname, t_flags flags)
 		ft_push(&head, buf, dp->d_name);
 	}	
 	ft_bubblesort(head, flags);
-
-	while (head != NULL)
-	{
-		printf("%s\n", head->name);
-		head = head->next;
-	}
-
+	ft_printls(head, flags);
 	closedir(dir);
 	return (0);
 }
