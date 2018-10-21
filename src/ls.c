@@ -6,7 +6,7 @@
 /*   By: pmigeon <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/26 15:40:00 by pmigeon           #+#    #+#             */
-/*   Updated: 2018/10/18 13:00:05 by pmigeon          ###   ########.fr       */
+/*   Updated: 2018/10/20 16:16:37 by pmigeon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,10 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <grp.h>
+#include <time.h>
 #include "../includes/b_libft.h"
 
 void		ft_push(t_node **head, struct stat *input, char *name)
@@ -28,27 +32,14 @@ void		ft_push(t_node **head, struct stat *input, char *name)
 	*head = new;
 }
 
-void	ft_swap(t_node *a, t_node *b)
-{
-	struct stat *temp;
-	char *tempc;
-
-	temp = a->data;
-	a->data = b->data;
-	b->data = temp;
-	tempc = a->name;
-	a->name = b->name;
-	b->name = tempc;
-}
-
 int		timesort(t_node *a, t_node *b)
 {
 	if (a->data->st_mtimespec.tv_sec < b->data->st_mtimespec.tv_sec)
-		return (1);
+		return (-1);
 	else if (a->data->st_mtimespec.tv_sec == b->data->st_mtimespec.tv_sec)
 	{
 		if (a->data->st_mtimespec.tv_nsec < b->data->st_mtimespec.tv_nsec)
-			return (1);
+			return (-1);
 		else if (a->data->st_mtimespec.tv_nsec == b->data->st_mtimespec.tv_nsec)
 			return (ft_strcmp(a->name, b->name));
 	}
@@ -60,8 +51,8 @@ int		ft_determinesort(t_node *a, t_node *b, t_flags flags)
 	if (flags.tFLAG)
 	{
 		if (flags.rFLAG)
-			return (timesort(b, a));
-		return (timesort(a, b));
+			return (timesort(a, b));
+		return (timesort(b, a));
 	}
 	else if (flags.rFLAG)
 		return (ft_strcmp(b->name, a->name));
@@ -98,8 +89,30 @@ int		ft_flaghandler(char **argv, t_flags *flags)
 	return(i);
 }
 
+void	ft_getblocks(t_node *head, t_flags flags)
+{
+	int sum; 
+
+	sum = 0;
+	while (head)
+	{
+		if (flags.aFLAG)
+			sum += head->data->st_blocks;
+		else if (head->name[0] != '.')
+			sum += head->data->st_blocks;
+		head = head->next;
+	}
+	printf("total %i\n", sum);
+}
+
+
 void	ft_printls(t_node *head, t_flags flags)
 {
+	struct passwd *f;
+	struct group *g;
+
+	if (flags.lFLAG)
+		ft_getblocks(head, flags);
 	while (head != NULL)
 	{
 		if (flags.aFLAG)
@@ -112,7 +125,12 @@ void	ft_printls(t_node *head, t_flags flags)
 		else if (head->name[0] != '.')
 		{
 			if (flags.lFLAG)
-				printf("%s\n", head->name);
+			{
+				printf("%s\n", ctime(&head->data->st_mtime));
+				f = getpwuid(head->data->st_uid);
+				g = getgrgid(f->pw_gid);
+				printf("%i\t%s\t%s\t%lli\t%s\n", head->data->st_nlink, f->pw_name, g->gr_name, head->data->st_size, head->name);
+			}
 			else
 				printf("%s\t", head->name);
 		}
